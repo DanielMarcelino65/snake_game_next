@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface ContextData {
     themeState: boolean;
     toggleTheme: () => void;
@@ -6,4 +8,8 @@ export interface ContextData {
 
 export interface ContextProvider {
     children: ReactElement;
-  }
+}
+
+export interface AuthProviderProps{
+    children: ReactNode;
+}

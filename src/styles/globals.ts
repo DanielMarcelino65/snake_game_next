@@ -29,6 +29,9 @@ time, mark, audio, video {
 	font-size: 62.5%;
     font-family: ${({ theme }) => theme.fontFamily.Inter};
 	vertical-align: baseline;
+	html {
+  	scroll-behavior: smooth;
+}
 }
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 

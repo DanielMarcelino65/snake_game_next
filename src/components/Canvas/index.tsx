@@ -6,6 +6,10 @@ import SnakeGameLogo from "../../../assets/snake-logo.svg";
 import * as S from "./styles";
 import { drawCanvas } from "./types";
 import { useRouter } from "next/router";
+import { addDoc, collection, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { db } from "@/services/firebase";
+import { useAuth } from "@/context/AuthContext";
+import { User } from "firebase/auth";
 
 //Variaveis de inicialização do jogo
 const canvasX = 1000;
@@ -26,20 +30,66 @@ const Canvas = () => {
   const [delay, setDelay] = useState<number | null>(null);
   const [gameover, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
+  const [playerName, setPlayerName] = useState("");
   const [highScore, setHighScore] = useState(0);
   const [directionQueue, setDirectionQueue] = useState<number[][]>([]);
   const [display, setDisplay] = useState("");
+  const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
+  const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const router = useRouter();
+  const { currentUser } = useAuth();
 
+  const gestureThreshold = 10;
   const lightGreen = "#a3d001";
   const darkGreen = "#85b000";
+  const snakeColor = "#4572e7";
 
   //Interval Hook para atualizar o jogo de acordo com o delay
   useInterval(() => gameLoop(), delay);
 
   useEffect(() => {
+    localStorage.removeItem('snakeScore')
+    const playerName = localStorage.getItem("playerName");
+    if (playerName) {
+      setPlayerName(playerName);
+    }
+  }, []);
+
+  
+
+  useEffect(() => {
     window.scrollTo(0, window.innerHeight);
   }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd({
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    const deltaX = touchEnd.x - touchStart.x;
+    const deltaY = touchEnd.y - touchStart.y;
+    if (Math.abs(deltaX) > gestureThreshold || Math.abs(deltaY) > gestureThreshold) {
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        setDirectionQueue((prev) => [...prev, deltaX > 0 ? [1, 0] : [-1, 0]]);
+      } else {
+        setDirectionQueue((prev) => [...prev, deltaY > 0 ? [0, 1] : [0, -1]]);
+      }
+    }
+  
+    // Resetar o estado do toque
+    setTouchStart({ x: 0, y: 0 });
+    setTouchEnd({ x: 0, y: 0 });
+  };
 
   function drawCheckerboard({ ctx, scale, canvasX, canvasY }: drawCanvas) {
     for (let x = 0; x < canvasX / scale; x++) {
@@ -50,7 +100,26 @@ const Canvas = () => {
     }
   }
 
+  function drawSnake(ctx: CanvasRenderingContext2D, snake: number[][]) {
+    const maxSize = 1; 
+    const minSize = 0.6;
+    const sizeDecrease = 0.01;
+    
+    snake.forEach((segment, index) => {
+      const size = Math.max(maxSize - sizeDecrease * index, minSize);
+      const padding = (1 - size) / 2;
+      const [x, y] = segment;
+  
+      ctx.fillStyle = snakeColor;
+      ctx.fillRect(x + padding, y + padding, size, size);
+    });
+  }
+  
+
+  
+
   useEffect(() => {
+    
     if (typeof window !== "undefined") {
       const score = localStorage.getItem("snakeScore");
       if (score) {
@@ -64,8 +133,7 @@ const Canvas = () => {
       if (ctx) {
         ctx.setTransform(scale, 0, 0, scale, 0, 0);
         drawCheckerboard({ ctx, scale, canvasX, canvasY });
-        ctx.fillStyle = "#20A152";
-        snake.forEach(([x, y]) => ctx.fillRect(x, y, 1, 1));
+        drawSnake(ctx, snake);
         ctx.drawImage(fruit, apple[0], apple[1], 1, 1);
         setDisplay("none");
       }
@@ -77,10 +145,45 @@ const Canvas = () => {
   }, []);
 
   function handleSetScore() {
-    if (score > Number(localStorage.getItem("snakeScore"))) {
+    if (currentUser && score > Number(localStorage.getItem("snakeScore"))) { // Verifique se há um usuário logado
       localStorage.setItem("snakeScore", JSON.stringify(score));
+      setHighScore(score);
+      saveScoreToFirestore(score);
     }
   }
+
+  const saveScoreToFirestore = async (newScore: number) => {
+    if (!currentUser) return; // Não proceda se não houver usuário logado
+    const scoresCollectionRef = collection(db, "scores");
+    const q = query(scoresCollectionRef, where("userId", "==", currentUser.uid));
+  
+    try {
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        querySnapshot.forEach(async (document) => {
+          const existingScore = document.data().score;
+          if (newScore > existingScore) {
+            await updateDoc(document.ref, {
+              score: newScore,
+              timestamp: new Date()
+            });
+            console.log("Score updated to: ", newScore);
+          }
+        });
+      } else {
+        await addDoc(scoresCollectionRef, {
+          playerName: currentUser.displayName || "Anônimo",
+          score: newScore,
+          timestamp: new Date(),
+          userId: currentUser.uid
+        });
+        console.log("New score created for user.");
+      }
+    } catch (error) {
+      console.error("Error accessing Firestore: ", error);
+    }
+  };
+
 
   function startGame() {
     setSnake(initialSnake);
@@ -164,7 +267,6 @@ const Canvas = () => {
       newSnake[0][1] + direction[1],
     ];
 
-    // Se a cobra chegar ao limite do canvas, faça-a aparecer do lado oposto
     if (newSnakeHead[0] >= canvasX / scale) newSnakeHead[0] = 0;
     if (newSnakeHead[0] < 0) newSnakeHead[0] = canvasX / scale - 1;
     if (newSnakeHead[1] >= canvasY / scale) newSnakeHead[1] = 0;
@@ -212,7 +314,11 @@ const Canvas = () => {
   }
 
   return (
-    <S.Background>
+    <S.Background
+    onTouchStart={handleTouchStart}
+    onTouchMove={handleTouchMove}
+    onTouchEnd={handleTouchEnd}
+    >
       <S.Container
         id="game-container"
         onKeyDown={(e) => changeDirection(e)}
@@ -227,7 +333,7 @@ const Canvas = () => {
               <S.score>
                 Pontuação
                 <span style={{ marginLeft: 2 }}>
-                  <NextImage
+                  <S.AppleImage
                     id="fruit"
                     width={30}
                     src={AppleLogo}
@@ -250,9 +356,10 @@ const Canvas = () => {
         {gameover && (
           <S.GameOverContainer>
             <S.gameOver>VOCÊ PERDEU!</S.gameOver>
+            <S.gameOver style={{marginBottom: 50, marginTop: 10}}>Pontuação: {score}</S.gameOver>
             <S.playButton onClick={play}>JOGAR NOVAMENTE</S.playButton>
             <S.playButton
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/Home")}
               style={{ marginTop: 100 }}
             >
               MENU PRINCIPAL

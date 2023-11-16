@@ -2,7 +2,6 @@ import {createContext, use, useContext, useEffect, useState} from 'react';
 import { ThemeProvider } from 'styled-components'
 import { ContextData } from './types';
 import light, {dark} from '@/styles/theme/light';
-import { json } from 'stream/consumers';
 
 const themeContext = createContext<ContextData>({} as ContextData);
 
