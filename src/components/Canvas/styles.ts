@@ -104,7 +104,7 @@ export const score = styled.h2`
 	-webkit-text-fill-color: transparent;
 	padding: 10px;
 
-	@media (min-width: 1600px) {
+	@media (min-width: 1100px) {
 		font-size: 48px;
 	}
 `;
