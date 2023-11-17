@@ -10,6 +10,7 @@ import { addDoc, collection, getDocs, query, updateDoc, where } from "firebase/f
 import { db } from "@/services/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { User } from "firebase/auth";
+import { useThemeContext } from "@/context";
 
 //Variaveis de inicialização do jogo
 const canvasX = 1000;
@@ -29,6 +30,7 @@ const Canvas = () => {
   const [direction, setDirection] = useState([0, -1]);
   const [delay, setDelay] = useState<number | null>(null);
   const [gameover, setGameOver] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [score, setScore] = useState(0);
   const [playerName, setPlayerName] = useState("");
   const [highScore, setHighScore] = useState(0);
@@ -37,12 +39,17 @@ const Canvas = () => {
   const [touchStart, setTouchStart] = useState({ x: 0, y: 0 });
   const [touchEnd, setTouchEnd] = useState({ x: 0, y: 0 });
   const router = useRouter();
+  const { toggleTheme, themeState } = useThemeContext();
   const { currentUser } = useAuth();
 
   const gestureThreshold = 10;
   const lightGreen = "#a3d001";
   const darkGreen = "#85b000";
   const snakeColor = "#4572e7";
+
+  function handleTheme() {
+    toggleTheme();
+  }
 
   //Interval Hook para atualizar o jogo de acordo com o delay
   useInterval(() => gameLoop(), delay);
@@ -54,6 +61,21 @@ const Canvas = () => {
       setPlayerName(playerName);
     }
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsPaused(!isPaused);
+      }
+    };
+  
+    window.addEventListener("keydown", handleKeyDown);
+  
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isPaused]);
+  
 
   
 
@@ -191,6 +213,7 @@ const Canvas = () => {
     setDirection([1, 0]);
     setDelay(timeDelay);
     setScore(0);
+    
     setGameOver(false);
     setDirectionQueue([]);
     const containerElement = document.querySelector(
@@ -241,6 +264,7 @@ const Canvas = () => {
   }
 
   function gameLoop() {
+    if (isPaused) return;
     const newSnake = [...snake];
     if (directionQueue.length) {
       const nextDirection = directionQueue[0];
@@ -313,6 +337,16 @@ const Canvas = () => {
     }
   }
 
+  function handleResume () {
+    setIsPaused(false);
+    const containerElement = document.querySelector(
+      "[data-game-container]"
+    ) as HTMLElement;
+    containerElement?.focus();
+    console.log(document.activeElement === containerElement);
+    window.scrollTo(0, window.innerHeight);
+  }
+
   return (
     <S.Background
     onTouchStart={handleTouchStart}
@@ -366,6 +400,20 @@ const Canvas = () => {
             </S.playButton>
           </S.GameOverContainer>
         )}
+        {isPaused && (
+            <S.GameOverContainer>
+              <S.gameOver>PAUSADO</S.gameOver>
+              <S.playButton style={{marginTop: 50, marginBottom: 20}} onClick={handleResume}>Continuar</S.playButton>
+              <S.playButton onClick={() => router.push("/Home")}>Menu Principal</S.playButton>
+              <S.ThemeSwitchContainer onClick={() => handleTheme()}>
+                <S.SwitchContainer>
+                  <S.Switch isDark={themeState} />
+                </S.SwitchContainer>
+                <S.playButton style={{marginTop: 0}}>Tema</S.playButton>
+              </S.ThemeSwitchContainer>
+              {/* Aqui você pode adicionar a opção para trocar o tema */}
+            </S.GameOverContainer>
+          )}
       </S.Container>
     </S.Background>
   );
