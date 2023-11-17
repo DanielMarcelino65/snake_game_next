@@ -46,7 +46,7 @@ const HomeScreen = () => {
     const docHeight = document.body.scrollHeight;
     const scrolledPercentage = currentScrollY / (docHeight - windowHeight);
     setOpacity(scrolledPercentage);
-  }, 100); // Chama a função a cada 100ms
+  }, 100);
 
   window.addEventListener("scroll", handleScroll, { passive: true });
   return () => {

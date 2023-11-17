@@ -17,9 +17,11 @@ export const background = styled.div`
 export const HighScoreContainer = styled.div`
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    padding: 0 10px;
+    justify-content: flex-start;
+    align-items: flex-start;
     overflow-y: scroll;
+    overflow-x: visible;
     width: auto;
     max-height: 400px;
 `
