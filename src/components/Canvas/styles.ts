@@ -74,7 +74,6 @@ export const gameOver = styled.h1`
 export const playButton = styled.button`
 	font-size: 42px;
 	color: #FFAF00;
-	text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
 	font-family: ${({ theme }) => theme.fontFamily.Upheaval};
 	font-weight: 700;
 	z-index: 10;
@@ -103,6 +102,20 @@ export const playButton = styled.button`
 export const scoreBox = styled.div`
 	background-color: #37BDC6;
 	transform: translateY(10px);
+	display: flex;
+	align-items: center;
+`;
+
+export const IconWrapper = styled.div`
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, ${({ theme }) => theme.colors.primary} 50%, ${({ theme }) => theme.colors.secondary} 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 `;
 
 export const score = styled.h2`
