@@ -1,40 +1,92 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🐍 Snake Game Next
 
-## Getting Started
+Este projeto é uma implementação do clássico jogo da cobrinha utilizando **Next.js** e **React**. O objetivo é proporcionar uma experiência nostálgica com uma interface moderna e responsiva.
 
-First, run the development server:
+## 🎮 Demonstração
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Acesse o jogo em produção: [https://snake-game-next.vercel.app](https://snake-game-next.vercel.app)
+
+## 🛠 Tecnologias Utilizadas
+
+- **Next.js** – Framework React para aplicações modernas
+- **React** – Biblioteca para construção de interfaces
+- **TypeScript** – Tipagem estática para maior segurança
+- **CSS Modules** – Estilização escopada por componente
+
+## 📁 Estrutura do Projeto
+
+```
+snake_game_next/
+├── public/             # Arquivos estáticos
+├── src/
+│   ├── components/     # Componentes React reutilizáveis
+│   ├── pages/          # Páginas da aplicação
+│   ├── styles/         # Arquivos de estilização
+│   └── utils/          # Funções utilitárias
+├── .eslintrc.json      # Configuração do ESLint
+├── .gitignore          # Arquivos ignorados pelo Git
+├── README.md           # Documentação do projeto
+├── next.config.js      # Configuração do Next.js
+├── package.json        # Scripts e dependências
+├── tsconfig.json       # Configuração do TypeScript
+└── yarn.lock           # Lockfile do Yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Como Executar Localmente
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+1. Clone o repositório:
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+```bash
+git clone https://github.com/DanielMarcelino65/snake_game_next.git
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+2. Acesse a pasta do projeto:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+cd snake_game_next
+```
 
-## Learn More
+3. Instale as dependências:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+yarn install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Inicie o servidor de desenvolvimento:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+```bash
+yarn dev
+```
 
-## Deploy on Vercel
+5. Acesse no navegador:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+http://localhost:3000
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## 🕹️ Como Jogar
+
+- O jogo inicia automaticamente ao carregar a página.
+- **Setas direcionais do teclado** controlam a cobra:
+  - ↑ Cima
+  - ↓ Baixo
+  - ← Esquerda
+  - → Direita
+- Ao colidir nas paredes, você aparecerá do lado contrário do tabuleiro. Cuidado, no final isso pode ser seu calcanhar de aquiles.
+
+## 📈 Pontuação
+
+- Cada alimento coletado adiciona 1 pontos.
+- A pontuação atual é exibida no canto da tela.
+
+## 🎨 Personalização
+
+Você pode alterar cores, tamanho do grid ou velocidade da cobra em arquivos de configuração ou dentro dos componentes.
+
+## 🤝 Contribuições
+
+Contribuições são bem-vindas! Se você tiver sugestões de melhoria, encontrar bugs ou quiser colaborar, fique à vontade para abrir uma issue ou pull request.
+
+## 📜 Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
